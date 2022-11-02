@@ -72,3 +72,15 @@ func TestMaxCntCache_Set(t *testing.T) {
 	require.NoError(t, err)
 
 }
+
+func TestBuildinMapCache_checkCycle(t *testing.T) {
+	f := LocalCacheWithCycleInterval(time.Second)
+	c, err := NewLocalCache(f)
+	assert.NoError(t, err)
+	err = c.Set(context.Background(), "key1", "value1", time.Millisecond*100)
+	require.NoError(t, err)
+	// 以防万一
+	time.Sleep(time.Second * 3)
+	_, err = c.Get(context.Background(), "key1")
+	assert.Equal(t, errKeyNotFound, err)
+}

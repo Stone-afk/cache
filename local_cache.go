@@ -72,7 +72,9 @@ func (l *LocalCache) checkCycle() error {
 				ctx := context.Background()
 				for k, v := range l.data {
 					itm := v.(*value)
-					if itm.deadline.Before(time.Now()) {
+					// 设置了过期时间，并且已经过期
+					if !itm.deadline.IsZero() &&
+						itm.deadline.Before(time.Now()) {
 						if err = l.delete(ctx, k); err != nil {
 							break
 						}
