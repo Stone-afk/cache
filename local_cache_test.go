@@ -8,6 +8,47 @@ import (
 	"time"
 )
 
+func TestMaxCntCache_Get(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name    string
+		key     string
+		wantVal any
+		wantErr error
+	}{
+		{
+			name:    "exist",
+			key:     "key1",
+			wantVal: 123,
+		},
+		{
+			name:    "not exist",
+			key:     "invalid",
+			wantErr: errKeyNotFound,
+		},
+	}
+
+	cache, err := NewLocalCache()
+	if err != nil {
+		t.Error(err)
+	}
+	err = cache.Set(context.Background(), "key1", 123, time.Second*2)
+	require.NoError(t, err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			val, err := cache.Get(context.Background(), tc.key)
+			assert.Equal(t, tc.wantErr, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.wantVal, val)
+		})
+	}
+	time.Sleep(time.Second * 3)
+	_, err = cache.Get(context.Background(), "key1")
+	assert.Equal(t, errKeyExpired, err)
+}
+
 func TestMaxCntCache_Set(t *testing.T) {
 	cache, err := NewLocalCache()
 	if err != nil {
