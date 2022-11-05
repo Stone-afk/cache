@@ -12,6 +12,7 @@ type LocalCache struct {
 	close         chan struct{}
 	cycleInterval time.Duration
 	closeOnce     sync.Once
+	onEvicted     func(ctx context.Context, key string, val any) error
 	onEvicteds    []func(ctx context.Context, key string, val any) error
 }
 
@@ -24,6 +25,24 @@ func LocalCacheWithCycleInterval(interval time.Duration) LocalCacheOption {
 }
 
 func LocalCacheWithOnEvicteds(
+	onEvicted func(ctx context.Context, key string, val any) error) LocalCacheOption {
+	return func(l *LocalCache) {
+		originFunc := l.onEvicted
+		l.onEvicted = func(ctx context.Context, key string, val any) error {
+			if originFunc != nil {
+				if err := originFunc(ctx, key, val); err != nil {
+					return err
+				}
+			}
+			if err := onEvicted(ctx, key, val); err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+}
+
+func LocalCacheWithOnEvictedsV1(
 	onEvicteds ...func(ctx context.Context, key string, val any) error) LocalCacheOption {
 	return func(l *LocalCache) {
 		if l.onEvicteds == nil {
@@ -97,6 +116,10 @@ func (l *LocalCache) checkCycle() error {
 }
 
 func (l *LocalCache) OnEvicted(ctx context.Context, key string, val any) error {
+	return l.onEvicted(ctx, key, val)
+}
+
+func (l *LocalCache) OnEvictedV1(ctx context.Context, key string, val any) error {
 	for _, onEvicted := range l.onEvicteds {
 		err := onEvicted(ctx, key, val)
 		if err != nil {

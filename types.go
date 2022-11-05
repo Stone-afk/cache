@@ -11,6 +11,7 @@ var (
 	errKeyExpired       = errors.New("cache: key 已经过期")
 	errOverCapacity     = errors.New("cache: 超过缓存最大容量")
 	errFailedToSetCache = errors.New("cache: 设置键值对失败")
+	errInvalidkey       = errors.New("invalid key")
 )
 
 type Option func(cache Cache)
@@ -21,21 +22,24 @@ type Option func(cache Cache)
 // - any: Redis 之类的实现，你要考虑序列化的问题
 
 type Cache interface {
-	// val, err  := Get(ctx)
+	// Get val, err  := Get(ctx)
 	// str = val.(string)
 	Get(ctx context.Context, key string) (any, error)
 	Set(ctx context.Context, key string, val any, expiration time.Duration) error
 	Delete(ctx context.Context, key string) error
 	LoadAndDelete(ctx context.Context, key string) (any, error)
+
+	// 作业在这里
+	// OnEvicted(ctx context.Context) <- chan KV
 }
 
-//type CacheV2[T any] interface {
-//	Get(ctx context.Context, key string) (T, error)
-//
-//	Set(ctx context.Context, key string, val T, expiration time.Duration) error
-//
-//	Delete(ctx context.Context, key string) error
-//}
+type CacheV2[T any] interface {
+	Get(ctx context.Context, key string) (T, error)
+
+	Set(ctx context.Context, key string, val T, expiration time.Duration) error
+
+	Delete(ctx context.Context, key string) error
+}
 
 // type CacheV3 interface {
 // 	Get[T any](ctx context.Context, key string) (T, error)
