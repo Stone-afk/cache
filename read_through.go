@@ -23,7 +23,7 @@ type ReadThroughCache struct {
 
 func (c *ReadThroughCache) Set(ctx context.Context, key string, val any, expiration time.Duration) error {
 	c.mutex.Lock()
-	defer c.mutex.RUnlock()
+	defer c.mutex.Unlock()
 	return c.Cache.Set(ctx, key, val, expiration)
 }
 

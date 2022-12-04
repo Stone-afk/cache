@@ -18,7 +18,7 @@ type BloomFilter interface {
 	HasKey(ctx context.Context, key string) (bool, error)
 }
 
-func NewBloomFilterCacheV(cache Cache, bloomFilter BloomFilter,
+func NewBloomFilterCache(cache Cache, bloomFilter BloomFilter,
 	loadFunc func(ctx context.Context, key string) (any, error)) *BloomFilterCache {
 	return &BloomFilterCache{
 		Cache:       cache,
