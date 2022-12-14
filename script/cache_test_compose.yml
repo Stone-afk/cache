@@ -16,3 +16,8 @@ services:
     image: memcached
     ports:
       - "11211:11211"
+  ssdb:
+    container_name: "beego-ssdb"
+    image: wendal/ssdb
+    ports:
+      - "8888:8888"
