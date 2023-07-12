@@ -108,7 +108,11 @@ func (s *SingleflightCacheV2) Get(ctx context.Context, key string) (any, error) 
 		return nil, err
 	}
 	if err == errKeyNotFound {
+		defer func() {
+			s.group.Forget(key)
+		}()
 		val, err, _ = s.group.Do(key, func() (interface{}, error) {
+
 			v, exc := s.LoadFunc(ctx, key)
 			if exc == nil {
 				if e := s.Cache.Set(ctx, key, v, s.Expiration); e != nil {
