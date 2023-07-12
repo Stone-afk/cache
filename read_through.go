@@ -146,7 +146,8 @@ func (c *ReadThroughCacheV1[T]) Get(ctx context.Context, key string) (T, error) 
 	val, err := c.Cache.Get(ctx, key)
 	c.mutex.RUnlock()
 	if err != nil && err != errKeyNotFound {
-		return nil, err
+		var t T
+		return t, err
 	}
 	if err == errKeyNotFound {
 		c.mutex.Lock()
@@ -154,7 +155,8 @@ func (c *ReadThroughCacheV1[T]) Get(ctx context.Context, key string) (T, error) 
 		val, err = c.LoadFunc(ctx, key)
 
 		if err != nil {
-			return nil, fmt.Errorf("cache 无法加载数据: %w", err)
+			var t T
+			return t, fmt.Errorf("cache 无法加载数据: %w", err)
 		}
 
 		// 忽略缓存刷新失败
