@@ -12,8 +12,8 @@ type LocalCache struct {
 	close         chan struct{}
 	cycleInterval time.Duration
 	closeOnce     sync.Once
-	onEvicted     func(ctx context.Context, key string, val any) error
-	onEvicteds    []func(ctx context.Context, key string, val any) error
+	// onEvicted     func(ctx context.Context, key string, val any) error
+	onEvicteds []func(ctx context.Context, key string, val any) error
 }
 
 type LocalCacheOption func(l *LocalCache)
@@ -24,23 +24,22 @@ func LocalCacheWithCycleInterval(interval time.Duration) LocalCacheOption {
 	}
 }
 
-func LocalCacheWithOnEvicteds(
-	onEvicted func(ctx context.Context, key string, val any) error) LocalCacheOption {
-	return func(l *LocalCache) {
-		originFunc := l.onEvicted
-		l.onEvicted = func(ctx context.Context, key string, val any) error {
-			if originFunc != nil {
-				if err := originFunc(ctx, key, val); err != nil {
-					return err
-				}
-			}
-			if err := onEvicted(ctx, key, val); err != nil {
-				return err
-			}
-			return nil
-		}
-	}
-}
+//func LocalCacheWithOnEvictedsV1(onEvicted func(ctx context.Context, key string, val any) error) LocalCacheOption {
+//	return func(l *LocalCache) {
+//		originFunc := l.onEvicted
+//		l.onEvicted = func(ctx context.Context, key string, val any) error {
+//			if originFunc != nil {
+//				if err := originFunc(ctx, key, val); err != nil {
+//					return err
+//				}
+//			}
+//			if err := onEvicted(ctx, key, val); err != nil {
+//				return err
+//			}
+//			return nil
+//		}
+//	}
+//}
 
 func LocalCacheWithOnEvictedsV1(
 	onEvicteds ...func(ctx context.Context, key string, val any) error) LocalCacheOption {
