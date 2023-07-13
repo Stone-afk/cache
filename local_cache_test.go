@@ -85,21 +85,21 @@ func TestBuildinMapCache_checkCycle(t *testing.T) {
 	assert.Equal(t, errKeyNotFound, err)
 }
 
-//func TestBuildInMapCache_Loop(t *testing.T) {
-//	cnt := 0
-//	c, err := NewLocalCache(
-//		LocalCacheWithCycleInterval(time.Second),
-//		LocalCacheWithOnEvicteds(func(ctx context.Context, key string, val any) error {
-//			cnt++
-//			return nil
-//		}))
-//	require.NoError(t, err)
-//	err = c.Set(context.Background(), "key1", 123, time.Second)
-//	require.NoError(t, err)
-//	time.Sleep(time.Second * 3)
-//	c.mutex.RLock()
-//	defer c.mutex.RUnlock()
-//	_, ok := c.data["key1"]
-//	require.False(t, ok)
-//	require.Equal(t, 1, cnt)
-//}
+func TestBuildInMapCache_Loop(t *testing.T) {
+	cnt := 0
+	c, err := NewLocalCache(
+		LocalCacheWithCycleInterval(time.Second),
+		LocalCacheWithOnEvicteds(func(ctx context.Context, key string, val any) error {
+			cnt++
+			return nil
+		}))
+	require.NoError(t, err)
+	err = c.Set(context.Background(), "key1", 123, time.Second)
+	require.NoError(t, err)
+	time.Sleep(time.Second * 3)
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	_, ok := c.data["key1"]
+	require.False(t, ok)
+	require.Equal(t, 1, cnt)
+}
