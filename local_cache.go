@@ -41,8 +41,7 @@ func LocalCacheWithCycleInterval(interval time.Duration) LocalCacheOption {
 //	}
 //}
 
-func LocalCacheWithOnEvictedsV1(
-	onEvicteds ...func(ctx context.Context, key string, val any) error) LocalCacheOption {
+func LocalCacheWithOnEvicteds(onEvicteds ...func(ctx context.Context, key string, val any) error) LocalCacheOption {
 	return func(l *LocalCache) {
 		if l.onEvicteds == nil {
 			l.onEvicteds = onEvicteds
