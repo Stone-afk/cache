@@ -50,16 +50,15 @@ type CacheV2[T any] interface {
 // }
 
 type CacheV3[T any] interface {
-	// Set a cached value by key.
-	Set(ctx context.Context, key string, val T, expiration time.Duration) error
-	// Set(ctx context.Context, key string, val []byte, expiration time.Duration) error
-	// millis 毫秒数，过期时间
-	// Set(key string, val any, mills int64)
-
 	// Get a cached value by key.
 	Get(ctx context.Context, key string) (T, error)
 	// GetMulti is a batch version of Get.
 	GetMulti(ctx context.Context, keys []string) (T, error)
+	// Set a cached value by key.
+	// Set(ctx context.Context, key string, val []byte, expiration time.Duration) error
+	// millis 毫秒数，过期时间
+	// Set(key string, val any, mills int64)
+	Set(ctx context.Context, key string, val T, expiration time.Duration) error
 	// Delete cached value by key.
 	// Should not return error if key not found
 	Delete(ctx context.Context, key string) error
