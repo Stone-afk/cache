@@ -66,7 +66,7 @@ type CacheV3[T any] interface {
 	// 同时会把被删除的数据返回
 	// Delete(key string) (any, error)
 
-	LoadAndDelete(ctx context.Context, key string) (any, error)
+	LoadAndDelete(ctx context.Context, key string) (T, error)
 
 	// Incr Increment a cached int value by key, as a counter.
 	Incr(ctx context.Context, key string) error
