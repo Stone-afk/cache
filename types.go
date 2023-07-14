@@ -48,3 +48,33 @@ type CacheV2[T any] interface {
 //
 // 	Delete(ctx context.Context, key string) error
 // }
+
+type CacheV3[T any] interface {
+	// Set a cached value by key.
+	Set(ctx context.Context, key string, val T, expiration time.Duration) error
+	// Set(ctx context.Context, key string, val []byte, expiration time.Duration) error
+	// millis 毫秒数，过期时间
+	// Set(key string, val any, mills int64)
+
+	// Get a cached value by key.
+	Get(ctx context.Context, key string) (T, error)
+	// GetMulti is a batch version of Get.
+	GetMulti(ctx context.Context, keys []string) (T, error)
+	// Delete cached value by key.
+	// Should not return error if key not found
+	Delete(ctx context.Context, key string) error
+	// 同时会把被删除的数据返回
+	// Delete(key string) (any, error)
+
+	LoadAndDelete(ctx context.Context, key string) (any, error)
+
+	// Incr Increment a cached int value by key, as a counter.
+	Incr(ctx context.Context, key string) error
+	// Decr Decrement a cached int value by key, as a counter.
+	Decr(ctx context.Context, key string) error
+	// IsExist Check if a cached value exists or not.
+	// if key is expired, return (false, nil)
+	IsExist(ctx context.Context, key string) (bool, error)
+	// ClearAll Clear all cache.
+	ClearAll(ctx context.Context) error
+}

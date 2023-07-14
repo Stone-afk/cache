@@ -113,11 +113,11 @@ func (l *LocalCache) checkCycle() error {
 	return nil
 }
 
-//func (l *LocalCache) OnEvicted(ctx context.Context, key string, val any) error {
+//func (l *LocalCache) OnEvictedV1(ctx context.Context, key string, val any) error {
 //	return l.onEvicted(ctx, key, val)
 //}
 
-func (l *LocalCache) OnEvictedV1(ctx context.Context, key string, val any) error {
+func (l *LocalCache) OnEvicted(ctx context.Context, key string, val any) error {
 	for _, onEvicted := range l.onEvicteds {
 		err := onEvicted(ctx, key, val)
 		if err != nil {
