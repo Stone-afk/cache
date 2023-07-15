@@ -61,10 +61,10 @@ type CacheV3[T any] interface {
 	Set(ctx context.Context, key string, val T, expiration time.Duration) error
 	// Delete cached value by key.
 	// Should not return error if key not found
-	Delete(ctx context.Context, key string) error
 	// 同时会把被删除的数据返回
 	// Delete(key string) (any, error)
-
+	Delete(ctx context.Context, key string) error
+	// LoadAndDelete get and delete cached value by key
 	LoadAndDelete(ctx context.Context, key string) (T, error)
 
 	// Incr Increment a cached int value by key, as a counter.
