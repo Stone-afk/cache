@@ -28,9 +28,6 @@ type Cache interface {
 	Set(ctx context.Context, key string, val any, expiration time.Duration) error
 	Delete(ctx context.Context, key string) error
 	LoadAndDelete(ctx context.Context, key string) (any, error)
-
-	// 作业在这里
-	// OnEvicted(ctx context.Context) <- chan KV
 }
 
 type CacheV2[T any] interface {
@@ -49,23 +46,23 @@ type CacheV2[T any] interface {
 // 	Delete(ctx context.Context, key string) error
 // }
 
-type CacheV3[T any] interface {
+type CacheV3 interface {
 	// Get a cached value by key.
-	Get(ctx context.Context, key string) (T, error)
+	Get(ctx context.Context, key string) (any, error)
 	// GetMulti is a batch version of Get.
-	GetMulti(ctx context.Context, keys []string) (T, error)
+	GetMulti(ctx context.Context, keys []string) (any, error)
 	// Set a cached value by key.
 	// Set(ctx context.Context, key string, val []byte, expiration time.Duration) error
 	// millis 毫秒数，过期时间
 	// Set(key string, val any, mills int64)
-	Set(ctx context.Context, key string, val T, expiration time.Duration) error
+	Set(ctx context.Context, key string, val any, expiration time.Duration) error
 	// Delete cached value by key.
 	// Should not return error if key not found
 	// 同时会把被删除的数据返回
 	// Delete(key string) (any, error)
 	Delete(ctx context.Context, key string) error
 	// LoadAndDelete get and delete cached value by key
-	LoadAndDelete(ctx context.Context, key string) (T, error)
+	LoadAndDelete(ctx context.Context, key string) (any, error)
 
 	// Incr Increment a cached int value by key, as a counter.
 	Incr(ctx context.Context, key string) error
