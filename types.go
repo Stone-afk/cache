@@ -28,9 +28,6 @@ type Cache interface {
 	Set(ctx context.Context, key string, val any, expiration time.Duration) error
 	Delete(ctx context.Context, key string) error
 	LoadAndDelete(ctx context.Context, key string) (any, error)
-
-	// 作业在这里
-	// OnEvicted(ctx context.Context) <- chan KV
 }
 
 type CacheV2[T any] interface {
