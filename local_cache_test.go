@@ -61,7 +61,7 @@ func TestLocalCache_checkCycle(t *testing.T) {
 	assert.Equal(t, errKeyNotFound, err)
 }
 
-func TestBuildInMapCache_Loop(t *testing.T) {
+func TestLocalCache_Loop(t *testing.T) {
 	cnt := 0
 	c, err := NewLocalCache(
 		LocalCacheWithCycleInterval(time.Second),
