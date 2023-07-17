@@ -49,7 +49,7 @@ func TestLocalCache_Get(t *testing.T) {
 	assert.Equal(t, errKeyExpired, err)
 }
 
-func TestBuildinMapCache_checkCycle(t *testing.T) {
+func TestLocalCache_checkCycle(t *testing.T) {
 	f := LocalCacheWithCycleInterval(time.Second)
 	c, err := NewLocalCache(f)
 	assert.NoError(t, err)
