@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestMaxCntCache_Get(t *testing.T) {
+func TestLocalCache_Get(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name    string
