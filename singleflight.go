@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"golang.org/x/sync/singleflight"
 	"log"
@@ -22,10 +23,10 @@ func QueryFromDB(key string) (any, error) {
 // 去数据库加载数据，并且刷新缓存。
 func Biz(key string) (any, error) {
 	val, err := cache.Get(context.Background(), key)
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		return nil, err
 	}
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		val, err, _ := group.Do(key, func() (interface{}, error) {
 			newVal, err := QueryFromDB(key)
 			if err != nil {
@@ -104,10 +105,10 @@ func NewSingleflightCacheV2(cache Cache,
 
 func (s *SingleflightCacheV2) Get(ctx context.Context, key string) (any, error) {
 	val, err := s.Cache.Get(ctx, key)
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		return nil, err
 	}
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		defer func() {
 			s.group.Forget(key)
 		}()

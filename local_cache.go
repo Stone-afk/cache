@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"sync"
 	"time"
@@ -132,7 +133,7 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 	val, ok := l.data[key]
 	l.mutex.RUnlock()
 	if !ok {
-		return nil, errKeyNotFound
+		return nil, errs.ErrKeyNotFound
 	}
 	// 别的用户可能在这个阶段调用 Set 重新刷新 key 的 val，
 	// 所以下面必须要进行 double check
@@ -142,7 +143,7 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 		defer l.mutex.Unlock()
 		val, ok = l.data[key]
 		if !ok {
-			return nil, errKeyNotFound
+			return nil, errs.ErrKeyNotFound
 		}
 		itm = val.(*value)
 		if itm.deadline.Before(time.Now()) {
@@ -150,7 +151,7 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 				return nil, err
 			}
 		}
-		return nil, errKeyExpired
+		return nil, errs.ErrKeyExpired
 	}
 	return itm.val, nil
 }
@@ -206,7 +207,7 @@ func (l *LocalCache) LoadAndDelete(ctx context.Context, key string) (any, error)
 	val, ok := l.data[key]
 	itm := val.(*value)
 	if !ok {
-		return nil, errKeyNotFound
+		return nil, errs.ErrKeyNotFound
 	}
 	if err := l.delete(ctx, key); err != nil {
 		return nil, err

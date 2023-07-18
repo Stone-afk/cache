@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"sync"
 	"sync/atomic"
@@ -33,17 +34,17 @@ func (m *MaxCntLocalCache) Set(ctx context.Context, key string,
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	_, err := m.LocalCache.Get(ctx, key)
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		return err
 	}
 	// 避免重复的key算两次
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		// 判断有没有超过最大值
 		cnt := atomic.AddInt32(&m.Cnt, 1)
 		// 满了
 		if cnt > m.MaxCnt {
 			atomic.AddInt32(&m.Cnt, -1)
-			return errOverCapacity
+			return errs.ErrOverCapacity
 		}
 	}
 	return m.LocalCache.Set(ctx, key, val, expiration)
