@@ -3,7 +3,6 @@ package cache
 import (
 	"cache/internal/errs"
 	"context"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -47,7 +46,7 @@ func (c *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 		// 第二个 key1=value2
 
 		if err != nil {
-			return nil, fmt.Errorf("cache 无法加载数据: %w", err)
+			return nil, errs.ErrCannotLoad(err)
 		}
 
 		// 这里 err 可以考虑忽略掉，或者输出 warn 日志
@@ -157,7 +156,7 @@ func (c *ReadThroughCacheV1[T]) Get(ctx context.Context, key string) (T, error) 
 
 		if err != nil {
 			var t T
-			return t, fmt.Errorf("cache 无法加载数据: %w", err)
+			return t, errs.ErrCannotLoad(err)
 		}
 
 		// 忽略缓存刷新失败
