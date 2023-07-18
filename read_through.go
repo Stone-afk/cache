@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"fmt"
 	"log"
@@ -31,10 +32,10 @@ func (c *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 	c.mutex.RLock()
 	val, err := c.Cache.Get(ctx, key)
 	c.mutex.RUnlock()
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		return nil, err
 	}
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		c.mutex.Lock()
 		defer c.mutex.Unlock()
 		// 加锁问题
@@ -145,11 +146,11 @@ func (c *ReadThroughCacheV1[T]) Get(ctx context.Context, key string) (T, error) 
 	c.mutex.RLock()
 	val, err := c.Cache.Get(ctx, key)
 	c.mutex.RUnlock()
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		var t T
 		return t, err
 	}
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		c.mutex.Lock()
 		defer c.mutex.Unlock()
 		val, err = c.LoadFunc(ctx, key)

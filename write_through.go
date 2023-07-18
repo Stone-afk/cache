@@ -1,20 +1,33 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
-	"fmt"
 	"time"
 )
 
 type WriteThroughCache struct {
 	Cache
-	StoreFunc func(ctx context.Context, key string, val any) error
+	storeFunc func(ctx context.Context, key string, val any) error
+}
+
+// NewWriteThroughCache creates a write through cache pattern decorator.
+// The fn is the function that persistent the key and val.
+func NewWriteThroughCache(cache Cache, fn func(ctx context.Context, key string, val any) error) (*WriteThroughCache, error) {
+	if fn == nil || cache == nil {
+		return nil, errs.ErrStoreFuncRequired
+	}
+
+	return &WriteThroughCache{
+		Cache:     cache,
+		storeFunc: fn,
+	}, nil
 }
 
 func (c *WriteThroughCache) Set(ctx context.Context, key string, val any, expiration time.Duration) error {
-	err := c.StoreFunc(ctx, key, val)
+	err := c.storeFunc(ctx, key, val)
 	if err != nil {
-		return fmt.Errorf("cache 无法存储数据: %w", err)
+		return errs.ErrCannotStore(err)
 	}
 	return c.Cache.Set(ctx, key, val, expiration)
 

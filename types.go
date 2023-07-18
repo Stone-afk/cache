@@ -2,16 +2,7 @@ package cache
 
 import (
 	"context"
-	"errors"
 	"time"
-)
-
-var (
-	errKeyNotFound      = errors.New("cache: 找不到 key")
-	errKeyExpired       = errors.New("cache: key 已经过期")
-	errOverCapacity     = errors.New("cache: 超过缓存最大容量")
-	errFailedToSetCache = errors.New("cache: 设置键值对失败")
-	errInvalidkey       = errors.New("invalid key")
 )
 
 type Option func(cache Cache)

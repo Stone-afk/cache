@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,7 +22,7 @@ func TestMaxCntCache_Set(t *testing.T) {
 	require.NoError(t, err)
 
 	err = cntCache.Set(context.Background(), "key3", 789, time.Second*10)
-	assert.Equal(t, errOverCapacity, err)
+	assert.Equal(t, errs.ErrOverCapacity, err)
 
 	err = cntCache.Delete(context.Background(), "key1")
 	require.NoError(t, err)

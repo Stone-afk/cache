@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"log"
 	"time"
@@ -29,13 +30,13 @@ func NewBloomFilterCache(cache Cache, bloomFilter BloomFilter,
 
 func (s *BloomFilterCache) Get(ctx context.Context, key string) (any, error) {
 	val, err := s.Cache.Get(ctx, key)
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		return nil, err
 	}
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		exist, _ := s.HasKey(ctx, key)
 		if !exist {
-			return nil, errInvalidkey
+			return nil, errs.ErrInvalidkey
 		}
 		val, err = s.LoadFunc(ctx, key)
 		if err == nil {
@@ -57,17 +58,17 @@ func NewBloomFilterCacheV1(cache Cache, bloomFilter BloomFilter,
 			if ok {
 				return loadFunc(ctx, key)
 			}
-			return nil, errInvalidkey
+			return nil, errs.ErrInvalidkey
 		},
 	}
 }
 
 func (s *BloomFilterCache) GetV1(ctx context.Context, key string) (any, error) {
 	val, err := s.Cache.Get(ctx, key)
-	if err != nil && err != errKeyNotFound {
+	if err != nil && err != errs.ErrKeyNotFound {
 		return nil, err
 	}
-	if err == errKeyNotFound {
+	if err == errs.ErrKeyNotFound {
 		val, err = s.LoadFunc(ctx, key)
 		if err == nil {
 			if e := s.Set(ctx, key, val, time.Minute); e != nil {

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v9"
@@ -44,7 +45,7 @@ func (r *RedisCache) Set(ctx context.Context, key string,
 	}
 	if msg != "OK" {
 		// 理论上来说这里永远不会进来
-		return fmt.Errorf("%w, 返回信息 %s", errFailedToSetCache, msg)
+		return fmt.Errorf("%w, 返回信息 %s", errs.ErrFailedToSetCache, msg)
 	}
 	return nil
 }
