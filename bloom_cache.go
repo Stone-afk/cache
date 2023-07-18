@@ -23,7 +23,8 @@ func NewBloomFilterCache(cache Cache, bloomFilter BloomFilter,
 	return &BloomFilterCache{
 		Cache:       cache,
 		BloomFilter: bloomFilter,
-		LoadFunc:    loadFunc}
+		LoadFunc:    loadFunc,
+	}
 }
 
 func (s *BloomFilterCache) Get(ctx context.Context, key string) (any, error) {
