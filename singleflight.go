@@ -49,22 +49,22 @@ func Biz(key string) (any, error) {
 // 做成一个装饰器模式。
 // 本身 read through 也是一个装饰器模式。
 
-// SingleflightCacheV1 也是装饰器模式
+// SingleflightCacheV2 也是装饰器模式
 // 进一步封装 ReadThroughCache
 // 在加载数据并且刷新缓存的时候应用了 singleflight 模式
-type SingleflightCacheV1 struct {
+type SingleflightCacheV2 struct {
 	ReadThroughCache
 }
 
-// NewSingleflightCacheV1
+// NewSingleflightCacheV2
 // 这种实现是通过 singleflight 封装了
 // LoadFunc 方法，可以确保从数据库加载数
 // 据必然每个 key 一个 goroutine。但是把数据回写缓存就是多个 goroutine 重
 // 复执行了。
-func NewSingleflightCacheV1(cache Cache,
-	LoadFunc func(ctx context.Context, key string) (any, error)) *SingleflightCacheV1 {
+func NewSingleflightCacheV2(cache Cache,
+	LoadFunc func(ctx context.Context, key string) (any, error)) *SingleflightCacheV2 {
 	g := &singleflight.Group{}
-	return &SingleflightCacheV1{
+	return &SingleflightCacheV2{
 		ReadThroughCache: ReadThroughCache{
 			Cache:      cache,
 			Expiration: time.Minute,
@@ -84,26 +84,27 @@ func NewSingleflightCacheV1(cache Cache,
 	}
 }
 
-type SingleflightCacheV2 struct {
+type SingleflightCache struct {
 	ReadThroughCache
 	group *singleflight.Group
 }
 
-// NewSingleflightCacheV2
+// NewSingleflightCache
 // 这种就是很简单的装饰器模式，在 Get 方法
 // 里面利用 singleflight 来完成加载数据 和 回写缓存两个步骤。
-func NewSingleflightCacheV2(cache Cache,
-	LoadFunc func(ctx context.Context, key string) (any, error)) *SingleflightCacheV2 {
-	return &SingleflightCacheV2{
+func NewSingleflightCache(cache Cache, expiration time.Duration,
+	LoadFunc func(ctx context.Context, key string) (any, error)) *SingleflightCache {
+	return &SingleflightCache{
 		ReadThroughCache: ReadThroughCache{
-			Cache:    cache,
-			LoadFunc: LoadFunc,
+			Expiration: expiration,
+			Cache:      cache,
+			LoadFunc:   LoadFunc,
 		},
 		group: &singleflight.Group{},
 	}
 }
 
-func (s *SingleflightCacheV2) Get(ctx context.Context, key string) (any, error) {
+func (s *SingleflightCache) Get(ctx context.Context, key string) (any, error) {
 	val, err := s.Cache.Get(ctx, key)
 	if err != nil && err != errs.ErrKeyNotFound {
 		return nil, err
