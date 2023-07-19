@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"cache/internal/errs"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,7 +25,7 @@ func TestLocalCache_Get(t *testing.T) {
 		{
 			name:    "not exist",
 			key:     "invalid",
-			wantErr: errKeyNotFound,
+			wantErr: errs.ErrKeyNotFound,
 		},
 	}
 
@@ -46,7 +47,7 @@ func TestLocalCache_Get(t *testing.T) {
 	}
 	time.Sleep(time.Second * 3)
 	_, err = cache.Get(context.Background(), "key1")
-	assert.Equal(t, errKeyExpired, err)
+	assert.Equal(t, errs.ErrKeyExpired, err)
 }
 
 func TestLocalCache_checkCycle(t *testing.T) {
@@ -58,7 +59,7 @@ func TestLocalCache_checkCycle(t *testing.T) {
 	// 以防万一
 	time.Sleep(time.Second * 3)
 	_, err = c.Get(context.Background(), "key1")
-	assert.Equal(t, errKeyNotFound, err)
+	assert.Equal(t, errs.ErrKeyNotFound, err)
 }
 
 func TestLocalCache_Loop(t *testing.T) {
