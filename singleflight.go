@@ -93,15 +93,18 @@ type SingleflightCache struct {
 // 这种就是很简单的装饰器模式，在 Get 方法
 // 里面利用 singleflight 来完成加载数据 和 回写缓存两个步骤。
 func NewSingleflightCache(cache Cache, expiration time.Duration,
-	LoadFunc func(ctx context.Context, key string) (any, error)) *SingleflightCache {
+	loadFunc func(ctx context.Context, key string) (any, error)) (*SingleflightCache, error) {
+	if loadFunc == nil {
+		return nil, errs.ErrLoadFuncRequired
+	}
 	return &SingleflightCache{
 		ReadThroughCache: ReadThroughCache{
 			Expiration: expiration,
 			Cache:      cache,
-			LoadFunc:   LoadFunc,
+			LoadFunc:   loadFunc,
 		},
 		group: &singleflight.Group{},
-	}
+	}, nil
 }
 
 func (s *SingleflightCache) Get(ctx context.Context, key string) (any, error) {
