@@ -1,110 +1,34 @@
 package cache
 
-//func TestReadThroughCache_Get(t *testing.T) {
-//	f := LocalCacheWithOnEvicteds(func(ctx context.Context, key string, val any) error {
-//		return nil
-//	})
-//	local, err := NewLocalCache(f)
-//	if err != nil {
-//		t.Error(err)
-//	}
-//	var db *orm.DB
-//	cache := &ReadThroughCache{
-//		Cache:      local,
-//		Expiration: time.Minute,
-//		LoadFunc: func(ctx context.Context, key string) (any, error) {
-//			if strings.HasPrefix(key, "/user/") {
-//				// 找用户的数据
-//				// Key = /user/123 ，其中123 是用户 id
-//				// 这是用户的
-//				id := strings.Trim(key, "/user/")
-//				return orm.NewSelector[User](db).Where(orm.C("Id").EQ(id)).Get(ctx)
-//			} else if strings.HasPrefix(key, "/order/") {
-//				// 找 Order 数据
-//			} else if strings.HasPrefix(key, "produce") {
-//				// 找商品的数据
-//			}
-//			// if-else 就没完没了了
-//			return nil, errors.New("不支持操作")
-//		},
-//	}
-//
-//	cache.Get(context.Background(), "/user/123")
-//
-//	userCache := &ReadThroughCache{
-//		Cache:      local,
-//		Expiration: time.Minute,
-//		LoadFunc: func(ctx context.Context, key string) (any, error) {
-//			if strings.HasPrefix(key, "/user/") {
-//				// 找用户的数据
-//				// Key = /user/123 ，其中123 是用户 id
-//				// 这是用户的
-//				id := strings.Trim(key, "/user/")
-//				return orm.NewSelector[User](db).Where(orm.C("Id").EQ(id)).Get(ctx)
-//			}
-//			// if-else 就没完没了了
-//			return nil, errors.New("不支持操作")
-//		},
-//	}
-//
-//	userCache.Get(context.Background(), "/user/123")
-//	// orderCache
-//
-//	userCacheV1 := &ReadThroughCacheV1[*User]{
-//		Cache:      local,
-//		Expiration: time.Minute,
-//		LoadFunc: func(ctx context.Context, key string) (*User, error) {
-//			if strings.HasPrefix(key, "/user/") {
-//				// 找用户的数据
-//				// Key = /user/123 ，其中123 是用户 id
-//				// 这是用户的
-//				id := strings.Trim(key, "/user/")
-//				return orm.NewSelector[User](db).Where(orm.C("Id").EQ(id)).Get(ctx)
-//			}
-//			// if-else 就没完没了了
-//			return nil, errors.New("不支持操作")
-//		},
-//	}
-//
-//	val, err := userCacheV1.Get(context.Background(), "/user/123")
-//	// val 还是 any, 我干嘛用泛型？？？？？我干嘛要 v1??
-//	fmt.Println(val)
-//	fmt.Println(err)
-//
-//	userCacheV2 := &ReadThroughCacheV2[*User]{
-//		// 这边要考虑创建一个 CacheV2
-//		// Cache: local,
-//		Expiration: time.Minute,
-//		LoadFunc: func(ctx context.Context, key string) (*User, error) {
-//			if strings.HasPrefix(key, "/user/") {
-//				// 找用户的数据
-//				// Key = /user/123 ，其中123 是用户 id
-//				// 这是用户的
-//				id := strings.Trim(key, "/user/")
-//				return orm.NewSelector[User](db).Where(orm.C("Id").EQ(id)).Get(ctx)
-//			}
-//			// if-else 就没完没了了
-//			return nil, errors.New("不支持操作")
-//		},
-//	}
-//
-//	user, err := userCacheV2.Get(context.Background(), "/user/123")
-//	fmt.Println(user.Name)
-//	fmt.Println(err)
-//
-//	userCacheV3 := &ReadThroughCacheV3{
-//		Loader: LoadFunc(func(ctx context.Context, key string) (any, error) {
-//			if strings.HasPrefix(key, "/user/") {
-//				// 找用户的数据
-//				// Key = /user/123 ，其中123 是用户 id
-//				// 这是用户的
-//				id := strings.Trim(key, "/user/")
-//				return orm.NewSelector[User](db).Where(orm.C("Id").EQ(id)).Get(ctx)
-//			}
-//			// if-else 就没完没了了
-//			return nil, errors.New("不支持操作")
-//		}),
-//	}
-//	fmt.Println(userCacheV3)
-//
-//}
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func ExampleReadThroughCache() {
+	c, err := NewLocalCache()
+	if err != nil {
+		panic(err)
+	}
+	rc, err := NewReadThroughCache(c,
+		// expiration, same as the expiration of key
+		time.Minute,
+		// load func, how to load data if the key is absent.
+		// in general, you should load data from database.
+		func(ctx context.Context, key string) (any, error) {
+			return fmt.Sprintf("hello, %s", key), nil
+		})
+	if err != nil {
+		panic(err)
+	}
+
+	val, err := rc.Get(context.Background(), "Beego")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Print(val)
+
+	// Output:
+	// hello, Beego
+}
