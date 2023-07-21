@@ -14,8 +14,11 @@ type WriteThroughCache struct {
 // NewWriteThroughCache creates a write through cache pattern decorator.
 // The fn is the function that persistent the key and val.
 func NewWriteThroughCache(cache Cache, fn func(ctx context.Context, key string, val any) error) (*WriteThroughCache, error) {
-	if fn == nil || cache == nil {
+	if fn == nil {
 		return nil, errs.ErrStoreFuncRequired
+	}
+	if cache == nil {
+		return nil, errs.ErrCacheRequired
 	}
 
 	return &WriteThroughCache{

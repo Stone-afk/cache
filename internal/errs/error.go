@@ -16,7 +16,8 @@ var (
 	ErrOverCapacity      = errors.New("cache: 超过缓存最大容量")
 	ErrFailedToSetCache  = errors.New("cache: 设置键值对失败")
 	ErrInvalidkey        = errors.New("cache: invalid key")
-	ErrStoreFuncRequired = errors.New("cache: cache or storeFunc can not be nil")
+	ErrStoreFuncRequired = errors.New("cache: storeFunc can not be nil")
+	ErrCacheRequired     = errors.New("cache: cache can not be nil")
 	ErrLoadFuncRequired  = errors.New("cache: loadFunc cannot be nil")
 )
 
