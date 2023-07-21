@@ -10,6 +10,13 @@ import (
 	"time"
 )
 
+func TestSingleflight_Memory_Get(t *testing.T) {
+	bm, err := NewLocalCache()
+	assert.Nil(t, err)
+
+	testSingleflightCacheConcurrencyGet(t, bm)
+}
+
 func testSingleflightCacheConcurrencyGet(t *testing.T, bm Cache) {
 	key, value := "key3", "value3"
 	db := &MockOrm{keysMap: map[string]int{key: 1}, kvs: map[string]any{key: value}}
