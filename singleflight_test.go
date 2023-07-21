@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func TestSingleflight_Memory_Get(t *testing.T) {
+func TestSingleflight_LocalCache_Get(t *testing.T) {
 	bm, err := NewLocalCache()
 	assert.Nil(t, err)
 
