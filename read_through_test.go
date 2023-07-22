@@ -3,11 +3,18 @@ package cache
 import (
 	"cache/internal/errs"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
+
+func TestReadThroughCache_Memory_Get(t *testing.T) {
+	bm, err := NewLocalCache()
+	assert.Nil(t, err)
+	testReadThroughCacheGet(t, bm)
+}
 
 func testReadThroughCacheGet(t *testing.T, bm Cache) {
 	testCases := []struct {
@@ -34,7 +41,7 @@ func testReadThroughCacheGet(t *testing.T, bm Cache) {
 				assert.Nil(t, err)
 				return c
 			}(),
-			wantErr: errs.ErrKeyNotFound,
+			wantErr: errs.ErrCannotLoad(errors.New("the key not exist")),
 		},
 		{
 			name:  "Get cache exist",
