@@ -3,7 +3,6 @@ package cache
 import (
 	"cache/internal/errs"
 	"context"
-	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -35,11 +34,7 @@ func testReadThroughCacheGet(t *testing.T, bm Cache) {
 				assert.Nil(t, err)
 				return c
 			}(),
-			wantErr: func() error {
-				err := errors.New("the key not exist")
-				return berror.Wrap(
-					err, LoadFuncFailed, "cache unable to load data")
-			}(),
+			wantErr: errs.ErrKeyNotFound,
 		},
 		{
 			name:  "Get cache exist",
@@ -58,7 +53,7 @@ func testReadThroughCacheGet(t *testing.T, bm Cache) {
 				}
 				c, err := NewReadThroughCache(bm, 3*time.Second, loadfunc)
 				assert.Nil(t, err)
-				err = c.Put(context.Background(), "key1", "value1", 3*time.Second)
+				err = c.Set(context.Background(), "key1", "value1", 3*time.Second)
 				assert.Nil(t, err)
 				return c
 			}(),
