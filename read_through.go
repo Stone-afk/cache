@@ -21,6 +21,20 @@ type ReadThroughCache struct {
 	LoadFunc   func(ctx context.Context, key string) (any, error)
 }
 
+// NewReadThroughCache create readThroughCache
+func NewReadThroughCache(cache Cache, expiration time.Duration,
+	loadFunc func(ctx context.Context, key string) (any, error),
+) (Cache, error) {
+	if loadFunc == nil {
+		return nil, errs.ErrLoadFuncRequired
+	}
+	return &ReadThroughCache{
+		Cache:      cache,
+		Expiration: expiration,
+		LoadFunc:   loadFunc,
+	}, nil
+}
+
 func (c *ReadThroughCache) Set(ctx context.Context, key string, val any, expiration time.Duration) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
