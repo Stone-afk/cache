@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func TestReadThroughCache_Memory_Get(t *testing.T) {
+func TestReadThroughCache_LocalCache_Get(t *testing.T) {
 	bm, err := NewLocalCache()
 	assert.Nil(t, err)
 	testReadThroughCacheGet(t, bm)
