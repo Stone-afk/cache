@@ -5,13 +5,16 @@ import (
 	"time"
 )
 
-type RandomExpirationCache struct {
+type RandomExpireCache struct {
 	Cache
 	Offset func() time.Duration
 }
 
-func NewRandomExpirationCache(cache Cache, offset func() time.Duration) *RandomExpirationCache {
-	return &RandomExpirationCache{
+// RandomExpireCacheOption implement genreate random time offset expired option
+type RandomExpireCacheOption func(*RandomExpireCache)
+
+func NewRandomExpireCache(cache Cache, offset func() time.Duration) *RandomExpireCache {
+	return &RandomExpireCache{
 		Cache:  cache,
 		Offset: offset,
 	}
@@ -24,7 +27,7 @@ func NewRandomExpirationCache(cache Cache, offset func() time.Duration) *RandomE
 //	return c.Cache.Set(ctx, key, val, expiration)
 //}
 
-func (c *RandomExpirationCache) Set(ctx context.Context,
+func (c *RandomExpireCache) Set(ctx context.Context,
 	key string, val any, expiration time.Duration) error {
 	expiration = expiration + c.Offset()
 	return c.Cache.Set(ctx, key, val, expiration)
