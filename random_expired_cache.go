@@ -20,11 +20,14 @@ func WithRandomExpireOffsetFunc(fn func() time.Duration) RandomExpireCacheOption
 	}
 }
 
-func NewRandomExpireCache(cache Cache, offset func() time.Duration) *RandomExpireCache {
-	return &RandomExpireCache{
-		Cache:  cache,
-		offset: offset,
+func NewRandomExpireCache(cache Cache, opts ...RandomExpireCacheOption) *RandomExpireCache {
+	res := &RandomExpireCache{
+		Cache: cache,
 	}
+	for _, fn := range opts {
+		fn(res)
+	}
+	return res
 }
 
 //func (c *RandomExpirationCache) SetV1(ctx context.Context,
