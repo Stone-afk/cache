@@ -2,6 +2,8 @@ package cache
 
 import (
 	"context"
+	"math/rand"
+	"sync/atomic"
 	"time"
 )
 
@@ -45,5 +47,18 @@ func (c *RandomExpireCache) Set(ctx context.Context,
 
 // defaultExpiredFunc return a func that used to generate random time offset (range: [3s,8s)) expired
 func defaultExpiredFunc() func() time.Duration {
-	panic("")
+	const size = 5
+	var randTimes [size]time.Duration
+	for i := range randTimes {
+		randTimes[i] = time.Duration(i+3) * time.Second
+	}
+	// shuffle values
+	for i := range randTimes {
+		n := rand.Intn(size)
+		randTimes[i], randTimes[n] = randTimes[n], randTimes[i]
+	}
+	var i uint64
+	return func() time.Duration {
+		return randTimes[atomic.AddUint64(&i, 1)%size]
+	}
 }
