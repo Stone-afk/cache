@@ -24,10 +24,11 @@ func WithRandomExpireOffsetFunc(fn func() time.Duration) RandomExpireCacheOption
 
 func NewRandomExpireCache(cache Cache, opts ...RandomExpireCacheOption) *RandomExpireCache {
 	res := &RandomExpireCache{
-		Cache: cache,
+		Cache:  cache,
+		offset: defaultExpiredFunc(),
 	}
-	for _, fn := range opts {
-		fn(res)
+	for _, opt := range opts {
+		opt(res)
 	}
 	return res
 }
