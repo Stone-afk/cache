@@ -42,3 +42,8 @@ func (c *RandomExpireCache) Set(ctx context.Context,
 	expiration = expiration + c.offset()
 	return c.Cache.Set(ctx, key, val, expiration)
 }
+
+// defaultExpiredFunc return a func that used to generate random time offset (range: [3s,8s)) expired
+func defaultExpiredFunc() func() time.Duration {
+	panic("")
+}
