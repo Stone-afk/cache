@@ -4,8 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"testing"
 	"time"
 )
+
+func TestWithRandomExpireOffsetFunc(t *testing.T) {
+
+}
 
 func ExampleNewRandomExpireCache() {
 	mc, err := NewLocalCache()
