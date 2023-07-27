@@ -3,9 +3,23 @@ package cache
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
+	"testing"
 	"time"
 )
+
+func TestWithRandomExpireOffsetFunc(t *testing.T) {
+	bm, err := NewCache("memory", `{"interval":20}`)
+	assert.Nil(t, err)
+
+	magic := -time.Duration(rand.Int())
+	cache := NewRandomExpireCache(bm, WithRandomExpireOffsetFunc(func() time.Duration {
+		return magic
+	}))
+	// offset should return the magic value
+	assert.Equal(t, magic, cache.(*RandomExpireCache).offset())
+}
 
 func ExampleNewRandomExpireCache() {
 	mc, err := NewLocalCache()
