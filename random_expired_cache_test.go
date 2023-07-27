@@ -9,16 +9,18 @@ import (
 	"time"
 )
 
+func TestRandomExpireCache(t *testing.T) {}
+
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
-	bm, err := NewCache("memory", `{"interval":20}`)
+	bm, err := NewLocalCache()
 	assert.Nil(t, err)
 
 	magic := -time.Duration(rand.Int())
-	cache := NewRandomExpireCache(bm, WithRandomExpireOffsetFunc(func() time.Duration {
+	c := NewRandomExpireCache(bm, WithRandomExpireOffsetFunc(func() time.Duration {
 		return magic
 	}))
 	// offset should return the magic value
-	assert.Equal(t, magic, cache.(*RandomExpireCache).offset())
+	assert.Equal(t, magic, c.offset())
 }
 
 func ExampleNewRandomExpireCache() {
