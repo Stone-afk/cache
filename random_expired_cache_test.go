@@ -9,7 +9,14 @@ import (
 	"time"
 )
 
-func TestRandomExpireCache(t *testing.T) {}
+func TestRandomExpireCache(t *testing.T) {
+	bm, err := NewLocalCache()
+	assert.Nil(t, err)
+
+	c := NewRandomExpireCache(bm)
+	// should not be nil
+	assert.NotNil(t, c.offset)
+}
 
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
 	bm, err := NewLocalCache()
