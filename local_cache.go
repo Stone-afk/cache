@@ -215,6 +215,16 @@ func (l *LocalCache) LoadAndDelete(ctx context.Context, key string) (any, error)
 	return itm.val, nil
 }
 
+// IsExist checks if cache exists in memory.
+func (l *LocalCache) IsExist(ctx context.Context, key string) (bool, error) {
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
+	if v, ok := l.data[key]; ok {
+		return !v.(*value).isExpire(), nil
+	}
+	return false, nil
+}
+
 // close 无缓存，调用两次 Close 呢？第二次会阻塞
 // close 1 缓存，调用三次就会阻塞
 // Close()
