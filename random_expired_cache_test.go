@@ -16,6 +16,19 @@ func TestRandomExpireCache(t *testing.T) {
 	c := NewRandomExpireCache(bm)
 	// should not be nil
 	assert.NotNil(t, c.offset)
+
+	timeoutDuration := 3 * time.Second
+
+	if err = c.Set(context.Background(), "Leon Ding", 22, timeoutDuration); err != nil {
+		t.Error("set Error", err)
+	}
+
+	// testing random expire cache
+	time.Sleep(timeoutDuration + 3 + time.Second)
+
+	//if res, _ := c.IsExist(context.Background(), "Leon Ding"); !res {
+	//	t.Error("check err")
+	//}
 }
 
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
