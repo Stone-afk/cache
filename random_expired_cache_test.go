@@ -26,9 +26,16 @@ func TestRandomExpireCache(t *testing.T) {
 	// testing random expire cache
 	time.Sleep(timeoutDuration + 3 + time.Second)
 
-	//if res, _ := c.IsExist(context.Background(), "Leon Ding"); !res {
-	//	t.Error("check err")
-	//}
+	if res, _ := c.IsExist(context.Background(), "Leon Ding"); !res {
+		t.Error("check err")
+	}
+
+	if v, _ := c.Get(context.Background(), "Leon Ding"); v.(int) != 22 {
+		t.Error("get err")
+	}
+
+	assert.Nil(t, c.Delete(context.Background(), "Leon Ding"))
+
 }
 
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
