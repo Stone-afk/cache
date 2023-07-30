@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-type value struct {
+type ItemValue struct {
 	val      any
 	deadline time.Time
 }
 
-func (v *value) isExpire() bool {
+func (v *ItemValue) isExpire() bool {
 	return !v.deadline.IsZero() && v.deadline.Before(time.Now())
 }
 
 type LocalCache struct {
-	data          map[string]any
+	data          map[string]*ItemValue
 	mutex         sync.RWMutex
 	close         chan struct{}
 	cycleInterval time.Duration
@@ -64,7 +64,7 @@ func LocalCacheWithOnEvicteds(onEvicteds ...func(ctx context.Context, key string
 
 func NewLocalCache(opts ...LocalCacheOption) (*LocalCache, error) {
 	res := &LocalCache{
-		data:          make(map[string]any, 16),
+		data:          make(map[string]*ItemValue, 16),
 		close:         make(chan struct{}),
 		cycleInterval: time.Second * 10,
 	}
@@ -93,10 +93,8 @@ func (l *LocalCache) checkCycle() error {
 				l.mutex.Lock()
 				ctx := context.Background()
 				for k, v := range l.data {
-					itm := v.(*value)
 					// 设置了过期时间，并且已经过期
-					if !itm.deadline.IsZero() &&
-						itm.deadline.Before(time.Now()) {
+					if v.isExpire() {
 						if err = l.delete(ctx, k); err != nil {
 							break
 						}
@@ -134,22 +132,20 @@ func (l *LocalCache) OnEvicted(ctx context.Context, key string, val any) error {
 
 func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 	l.mutex.RLock()
-	val, ok := l.data[key]
+	itm, ok := l.data[key]
 	l.mutex.RUnlock()
 	if !ok {
 		return nil, errs.ErrKeyNotFound
 	}
 	// 别的用户可能在这个阶段调用 Set 重新刷新 key 的 val，
 	// 所以下面必须要进行 double check
-	itm := val.(*value)
 	if itm.deadline.Before(time.Now()) {
 		l.mutex.Lock()
 		defer l.mutex.Unlock()
-		val, ok = l.data[key]
+		itm, ok = l.data[key]
 		if !ok {
 			return nil, errs.ErrKeyNotFound
 		}
-		itm = val.(*value)
 		if itm.deadline.Before(time.Now()) {
 			if err := l.delete(ctx, key); err != nil {
 				return nil, err
@@ -175,7 +171,7 @@ func (l *LocalCache) Set(ctx context.Context, key string,
 	// 如果你想支持永不过期的，expiration = 0 就说明永不过期
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
-	l.data[key] = &value{
+	l.data[key] = &ItemValue{
 		val:      val,
 		deadline: time.Now().Add(expiration),
 	}
@@ -193,10 +189,9 @@ func (l *LocalCache) Delete(ctx context.Context, key string) error {
 }
 
 func (l *LocalCache) delete(ctx context.Context, key string) error {
-	val, ok := l.data[key]
+	itm, ok := l.data[key]
 	if ok {
 		delete(l.data, key)
-		itm := val.(*value)
 		err := l.OnEvicted(ctx, key, itm.val)
 		if err != nil {
 			return err
@@ -208,8 +203,7 @@ func (l *LocalCache) delete(ctx context.Context, key string) error {
 func (l *LocalCache) LoadAndDelete(ctx context.Context, key string) (any, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
-	val, ok := l.data[key]
-	itm := val.(*value)
+	itm, ok := l.data[key]
 	if !ok {
 		return nil, errs.ErrKeyNotFound
 	}
@@ -224,7 +218,7 @@ func (l *LocalCache) IsExist(ctx context.Context, key string) (bool, error) {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	if v, ok := l.data[key]; ok {
-		return !v.(*value).isExpire(), nil
+		return !v.isExpire(), nil
 	}
 	return false, nil
 }
@@ -257,8 +251,8 @@ func (l *LocalCache) Close(ctx context.Context) error {
 	})
 
 	if l.data != nil && len(l.data) != 0 {
-		for key, val := range l.data {
-			err := l.OnEvicted(ctx, key, val.(*value).val)
+		for key, itm := range l.data {
+			err := l.OnEvicted(ctx, key, itm.val)
 			if err != nil {
 				return err
 			}
