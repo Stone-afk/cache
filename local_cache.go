@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+type value struct {
+	val      any
+	deadline time.Time
+}
+
+func (v *value) isExpire() bool {
+	return v.deadline.IsZero() && v.deadline.Before(time.Now())
+}
+
 type LocalCache struct {
 	data          map[string]any
 	mutex         sync.RWMutex
@@ -51,11 +60,6 @@ func LocalCacheWithOnEvicteds(onEvicteds ...func(ctx context.Context, key string
 		}
 		l.onEvicteds = onEvicteds
 	}
-}
-
-type value struct {
-	val      any
-	deadline time.Time
 }
 
 func NewLocalCache(opts ...LocalCacheOption) (*LocalCache, error) {
