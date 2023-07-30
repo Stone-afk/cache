@@ -139,14 +139,14 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 	}
 	// 别的用户可能在这个阶段调用 Set 重新刷新 key 的 val，
 	// 所以下面必须要进行 double check
-	if itm.deadline.Before(time.Now()) {
+	if itm.isExpire() {
 		l.mutex.Lock()
 		defer l.mutex.Unlock()
 		itm, ok = l.data[key]
 		if !ok {
 			return nil, errs.ErrKeyNotFound
 		}
-		if itm.deadline.Before(time.Now()) {
+		if itm.isExpire() {
 			if err := l.delete(ctx, key); err != nil {
 				return nil, err
 			}

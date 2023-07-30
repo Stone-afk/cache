@@ -19,6 +19,7 @@ type Cache interface {
 	Set(ctx context.Context, key string, val any, expiration time.Duration) error
 	Delete(ctx context.Context, key string) error
 	LoadAndDelete(ctx context.Context, key string) (any, error)
+	IsExist(ctx context.Context, key string) (bool, error)
 }
 
 type CacheV2[T any] interface {
