@@ -13,7 +13,7 @@ type value struct {
 }
 
 func (v *value) isExpire() bool {
-	return v.deadline.IsZero() && v.deadline.Before(time.Now())
+	return !v.deadline.IsZero() && v.deadline.Before(time.Now())
 }
 
 type LocalCache struct {
