@@ -46,6 +46,14 @@ func TestRandomExpireCache(t *testing.T) {
 
 	assert.Nil(t, c.Set(context.Background(), "astaxie", "author", timeoutDuration))
 
+	res, _ = c.IsExist(context.Background(), "astaxie")
+	assert.True(t, res)
+
+	v, _ := c.Get(context.Background(), "astaxie")
+	assert.Equal(t, "author", v)
+
+	assert.Nil(t, c.Set(context.Background(), "astaxie1", "author1", timeoutDuration))
+
 }
 
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
