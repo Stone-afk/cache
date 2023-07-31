@@ -35,6 +35,10 @@ func TestRandomExpireCache(t *testing.T) {
 	}
 
 	assert.Nil(t, c.Delete(context.Background(), "Leon Ding"))
+	res, _ := c.IsExist(context.Background(), "Leon Ding")
+	assert.False(t, res)
+
+	assert.Nil(t, c.Set(context.Background(), "Leon Ding", "author", timeoutDuration))
 
 }
 
