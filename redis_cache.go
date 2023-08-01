@@ -59,3 +59,8 @@ func (r *RedisCache) Delete(ctx context.Context, key string) error {
 func (r *RedisCache) LoadAndDelete(ctx context.Context, key string) (any, error) {
 	return r.client.GetDel(ctx, key).Result()
 }
+
+func (r *RedisCache) IsExist(ctx context.Context, key string) (bool, error) {
+	res, err := r.client.Exists(ctx, key).Result()
+	return res > 0, err
+}
