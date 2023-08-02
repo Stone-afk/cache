@@ -8,14 +8,24 @@ import (
 	"time"
 )
 
+var DefaultKey = "cacheRedis"
+
 type RedisCache struct {
+	key    string
 	client redis.Cmdable
 }
 
 type RedisCacheOption func(r *RedisCache)
 
+func WithKeyOption(key string) RedisCacheOption {
+	return func(r *RedisCache) {
+		r.key = key
+	}
+}
+
 func NewRedisCache(client redis.Cmdable, opts ...RedisCacheOption) *RedisCache {
 	res := &RedisCache{
+		key:    DefaultKey,
 		client: client,
 	}
 	for _, opt := range opts {
@@ -63,4 +73,8 @@ func (r *RedisCache) LoadAndDelete(ctx context.Context, key string) (any, error)
 func (r *RedisCache) IsExist(ctx context.Context, key string) (bool, error) {
 	res, err := r.client.Exists(ctx, key).Result()
 	return res > 0, err
+}
+
+func (r *RedisCache) associate(originKey interface{}) string {
+	return fmt.Sprintf("%s:%s", r.key, originKey)
 }
