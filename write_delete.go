@@ -3,6 +3,8 @@ package cache
 import (
 	"cache/internal/errs"
 	"context"
+	"errors"
+	"fmt"
 )
 
 type WriteDeleteCache struct {
@@ -22,4 +24,13 @@ func NewWriteDeleteCache(cache Cache, fn func(ctx context.Context, key string, v
 		Cache:     cache,
 		storeFunc: fn,
 	}, nil
+}
+
+func (c *WriteDeleteCache) Set(ctx context.Context, key string, val any) error {
+	err := c.storeFunc(ctx, key, val)
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		wrapErr := errors.New(fmt.Sprintf("%s, %s", err.Error(), fmt.Sprintf("key: %s, val: %v", key, val)))
+		return errs.ErrStoreFailed(wrapErr)
+	}
+	return c.Cache.Delete(ctx, key)
 }
