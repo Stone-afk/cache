@@ -21,7 +21,7 @@ var (
 	ErrLoadFuncRequired  = errors.New("cache: loadFunc cannot be nil")
 )
 
-func ErrCannotStore(err error) error {
+func ErrStoreFailed(err error) error {
 	return fmt.Errorf("cache 无法存储数据: %w", err)
 }
 
