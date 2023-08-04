@@ -3,6 +3,8 @@ package cache
 import (
 	"cache/internal/errs"
 	"context"
+	"errors"
+	"fmt"
 	"time"
 )
 
@@ -30,7 +32,8 @@ func NewWriteThroughCache(cache Cache, fn func(ctx context.Context, key string, 
 func (c *WriteThroughCache) Set(ctx context.Context, key string, val any, expiration time.Duration) error {
 	err := c.storeFunc(ctx, key, val)
 	if err != nil {
-		return errs.ErrCannotStore(err)
+		wrapErr := errors.New(fmt.Sprintf("%s, %s", err.Error(), fmt.Sprintf("key: %s, val: %v", key, val)))
+		return errs.ErrStoreFailed(wrapErr)
 	}
 	return c.Cache.Set(ctx, key, val, expiration)
 
