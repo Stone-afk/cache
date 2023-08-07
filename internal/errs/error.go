@@ -22,9 +22,9 @@ var (
 )
 
 func ErrStoreFailed(err error) error {
-	return fmt.Errorf("cache 无法存储数据: %w", err)
+	return fmt.Errorf("cache 存储数据失败: %w", err)
 }
 
-func ErrCannotLoad(err error) error {
-	return fmt.Errorf("cache 无法加载数据: %w", err)
+func ErrLoadFailed(err error) error {
+	return fmt.Errorf("cache 加载数据失败: %w", err)
 }
