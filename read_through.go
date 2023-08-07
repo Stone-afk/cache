@@ -60,7 +60,7 @@ func (c *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 		// 第二个 key1=value2
 
 		if err != nil {
-			return nil, errs.ErrCannotLoad(err)
+			return nil, errs.ErrLoadFailed(err)
 		}
 
 		// 这里 err 可以考虑忽略掉，或者输出 warn 日志
@@ -170,7 +170,7 @@ func (c *ReadThroughCacheV1[T]) Get(ctx context.Context, key string) (T, error) 
 
 		if err != nil {
 			var t T
-			return t, errs.ErrCannotLoad(err)
+			return t, errs.ErrLoadFailed(err)
 		}
 
 		// 忽略缓存刷新失败

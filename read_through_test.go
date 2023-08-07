@@ -41,7 +41,7 @@ func testReadThroughCacheGet(t *testing.T, bm Cache) {
 				assert.Nil(t, err)
 				return c
 			}(),
-			wantErr: errs.ErrCannotLoad(errors.New("the key not exist")),
+			wantErr: errs.ErrLoadFailed(errors.New("the key not exist")),
 		},
 		{
 			name:  "Get cache exist",
