@@ -44,8 +44,13 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 				return errors.New("failed")
 			},
 			ctx: context.TODO(),
-			wantErr: berror.Wrap(errors.New("failed"), PersistCacheFailed,
-				fmt.Sprintf("key: %s, val: %v", "", nil)),
+			wantErr: func() error {
+				err := errors.New("failed")
+				wrapErr := errors.New(fmt.Sprintf("%s, %s", err.Error(), fmt.Sprintf("key: hello, val: world")))
+				return errs.ErrStoreFailed(wrapErr)
+			}(),
+			key:   "hello",
+			value: "world",
 		},
 		{
 			name:        "store key/value success",
@@ -54,7 +59,7 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			cache: func() Cache {
 				c, err := NewLocalCache()
 				assert.Nil(t, err)
-				err = cache.Set(context.Background(), "hello", "world", time.Second*2)
+				err = c.Set(context.Background(), "hello", "world", time.Second*2)
 				assert.Nil(t, err)
 				return c
 			}(),
@@ -73,7 +78,7 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			cache: func() Cache {
 				c, err := NewLocalCache()
 				assert.Nil(t, err)
-				err = cache.Set(context.Background(), "hello", "hello", time.Second*2)
+				err = c.Set(context.Background(), "hello", "hello", time.Second*2)
 				assert.Nil(t, err)
 				return c
 			}(),
