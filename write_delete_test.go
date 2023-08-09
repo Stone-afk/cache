@@ -33,7 +33,7 @@ func TestNewWriteDoubleDeleteCache(t *testing.T) {
 				cache: nil,
 				fn:    storeFunc,
 			},
-			wantErr: berror.Error(InvalidInitParameters, "cache or storeFunc can not be nil"),
+			wantErr: errs.ErrCacheRequired,
 		},
 		{
 			name: "nil storeFunc parameters",
@@ -41,7 +41,7 @@ func TestNewWriteDoubleDeleteCache(t *testing.T) {
 				cache: underlyingCache,
 				fn:    nil,
 			},
-			wantErr: berror.Error(InvalidInitParameters, "cache or storeFunc can not be nil"),
+			wantErr: errs.ErrStoreFuncRequired,
 		},
 		{
 			name: "init write-though cache success",
