@@ -6,9 +6,122 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
+
+func TestWriteDoubleDeleteCache_Set(t *testing.T) {
+	mockDbStore := make(map[string]any)
+
+	cancels := make([]func(), 0)
+	defer func() {
+		for _, cancel := range cancels {
+			cancel()
+		}
+	}()
+	timeout := time.Second * 3
+	testCases := []struct {
+		name        string
+		cache       Cache
+		storeFunc   func(ctx context.Context, key string, val any) error
+		ctx         context.Context
+		interval    time.Duration
+		sleepSecond time.Duration
+		key         string
+		value       any
+		wantErr     error
+	}{
+		{
+			name:     "store key/value in db fail",
+			interval: time.Second,
+			cache:    NewMemoryCache(),
+			storeFunc: func(ctx context.Context, key string, val any) error {
+				return errors.New("failed")
+			},
+			ctx: context.TODO(),
+			wantErr: berror.Wrap(errors.New("failed"), PersistCacheFailed,
+				fmt.Sprintf("key: %s, val: %v", "", nil)),
+		},
+		{
+			name:        "store key/value success",
+			interval:    time.Second * 2,
+			sleepSecond: time.Second * 3,
+			cache: func() Cache {
+				cache := NewMemoryCache()
+				err := cache.Put(context.Background(), "hello", "world", time.Second*2)
+				require.NoError(t, err)
+				return cache
+			}(),
+			storeFunc: func(ctx context.Context, key string, val any) error {
+				mockDbStore[key] = val
+				return nil
+			},
+			ctx:   context.TODO(),
+			key:   "hello",
+			value: "world",
+		},
+		{
+			name:        "store key/value timeout",
+			interval:    time.Second * 2,
+			sleepSecond: time.Second * 3,
+			cache: func() Cache {
+				cache := NewMemoryCache()
+				err := cache.Put(context.Background(), "hello", "hello", time.Second*2)
+				require.NoError(t, err)
+				return cache
+			}(),
+			storeFunc: func(ctx context.Context, key string, val any) error {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case <-time.After(3 * time.Second):
+					mockDbStore[key] = val
+					return nil
+				}
+			},
+			ctx: func() context.Context {
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+				cancels = append(cancels, cancel)
+				return ctx
+
+			}(),
+			key:   "hello",
+			value: "hello",
+		},
+	}
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			cache := tt.cache
+			c, err := NewWriteDoubleDeleteCache(cache, tt.interval, timeout, tt.storeFunc)
+			if err != nil {
+				assert.EqualError(t, tt.wantErr, err.Error())
+				return
+			}
+
+			err = c.Set(tt.ctx, tt.key, tt.value)
+			if err != nil {
+				assert.EqualError(t, tt.wantErr, err.Error())
+				return
+			}
+
+			_, err = c.Get(tt.ctx, tt.key)
+			assert.Equal(t, ErrKeyNotExist, err)
+
+			err = cache.Put(tt.ctx, tt.key, tt.value, tt.interval)
+			require.NoError(t, err)
+
+			val, err := c.Get(tt.ctx, tt.key)
+			require.NoError(t, err)
+			assert.Equal(t, tt.value, val)
+
+			time.Sleep(tt.sleepSecond)
+
+			_, err = c.Get(tt.ctx, tt.key)
+			assert.Equal(t, ErrKeyNotExist, err)
+		})
+	}
+}
 
 func TestNewWriteDoubleDeleteCache(t *testing.T) {
 	underlyingCache, err := NewLocalCache()
