@@ -10,6 +10,64 @@ import (
 	"time"
 )
 
+func TestNewWriteDoubleDeleteCache(t *testing.T) {
+	underlyingCache, err := NewLocalCache()
+	assert.Nil(t, err)
+	storeFunc := func(ctx context.Context, key string, val any) error { return nil }
+
+	type args struct {
+		cache    Cache
+		interval time.Duration
+		fn       func(ctx context.Context, key string, val any) error
+	}
+	timeout := time.Second * 3
+	tests := []struct {
+		name    string
+		args    args
+		wantRes *WriteDoubleDeleteCache
+		wantErr error
+	}{
+		{
+			name: "nil cache parameters",
+			args: args{
+				cache: nil,
+				fn:    storeFunc,
+			},
+			wantErr: berror.Error(InvalidInitParameters, "cache or storeFunc can not be nil"),
+		},
+		{
+			name: "nil storeFunc parameters",
+			args: args{
+				cache: underlyingCache,
+				fn:    nil,
+			},
+			wantErr: berror.Error(InvalidInitParameters, "cache or storeFunc can not be nil"),
+		},
+		{
+			name: "init write-though cache success",
+			args: args{
+				cache:    underlyingCache,
+				fn:       storeFunc,
+				interval: time.Second,
+			},
+			wantRes: &WriteDoubleDeleteCache{
+				Cache:     underlyingCache,
+				storeFunc: storeFunc,
+				interval:  time.Second,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewWriteDoubleDeleteCache(tt.args.cache, tt.args.interval, timeout, tt.args.fn)
+			assert.Equal(t, tt.wantErr, err)
+			if err != nil {
+				return
+			}
+		})
+	}
+}
+
 func ExampleWriteDoubleDeleteCache() {
 	c, err := NewLocalCache()
 	if err != nil {
