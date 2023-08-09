@@ -35,7 +35,11 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 		{
 			name:     "store key/value in db fail",
 			interval: time.Second,
-			cache:    NewMemoryCache(),
+			cache: func() Cache {
+				c, err := NewLocalCache()
+				assert.Nil(t, err)
+				return c
+			}(),
 			storeFunc: func(ctx context.Context, key string, val any) error {
 				return errors.New("failed")
 			},
@@ -48,10 +52,11 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			interval:    time.Second * 2,
 			sleepSecond: time.Second * 3,
 			cache: func() Cache {
-				cache := NewMemoryCache()
-				err := cache.Put(context.Background(), "hello", "world", time.Second*2)
-				require.NoError(t, err)
-				return cache
+				c, err := NewLocalCache()
+				assert.Nil(t, err)
+				err = cache.Set(context.Background(), "hello", "world", time.Second*2)
+				assert.Nil(t, err)
+				return c
 			}(),
 			storeFunc: func(ctx context.Context, key string, val any) error {
 				mockDbStore[key] = val
@@ -66,10 +71,11 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			interval:    time.Second * 2,
 			sleepSecond: time.Second * 3,
 			cache: func() Cache {
-				cache := NewMemoryCache()
-				err := cache.Put(context.Background(), "hello", "hello", time.Second*2)
-				require.NoError(t, err)
-				return cache
+				c, err := NewLocalCache()
+				assert.Nil(t, err)
+				err = cache.Set(context.Background(), "hello", "hello", time.Second*2)
+				assert.Nil(t, err)
+				return c
 			}(),
 			storeFunc: func(ctx context.Context, key string, val any) error {
 				select {
