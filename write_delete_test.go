@@ -44,8 +44,13 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 				return errors.New("failed")
 			},
 			ctx: context.TODO(),
-			wantErr: berror.Wrap(errors.New("failed"), PersistCacheFailed,
-				fmt.Sprintf("key: %s, val: %v", "", nil)),
+			wantErr: func() error {
+				err := errors.New("failed")
+				wrapErr := errors.New(fmt.Sprintf("%s, %s", err.Error(), fmt.Sprintf("key: hello, val: world")))
+				return errs.ErrStoreFailed(wrapErr)
+			}(),
+			key:   "hello",
+			value: "world",
 		},
 		{
 			name:        "store key/value success",
@@ -54,7 +59,7 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			cache: func() Cache {
 				c, err := NewLocalCache()
 				assert.Nil(t, err)
-				err = cache.Set(context.Background(), "hello", "world", time.Second*2)
+				err = c.Set(context.Background(), "hello", "world", time.Second*2)
 				assert.Nil(t, err)
 				return c
 			}(),
@@ -73,7 +78,7 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			cache: func() Cache {
 				c, err := NewLocalCache()
 				assert.Nil(t, err)
-				err = cache.Set(context.Background(), "hello", "hello", time.Second*2)
+				err = c.Set(context.Background(), "hello", "hello", time.Second*2)
 				assert.Nil(t, err)
 				return c
 			}(),
@@ -98,8 +103,8 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			cache := tt.cache
-			c, err := NewWriteDoubleDeleteCache(cache, tt.interval, timeout, tt.storeFunc)
+			oc := tt.cache
+			c, err := NewWriteDoubleDeleteCache(oc, tt.interval, timeout, tt.storeFunc)
 			if err != nil {
 				assert.EqualError(t, tt.wantErr, err.Error())
 				return
@@ -112,9 +117,9 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			}
 
 			_, err = c.Get(tt.ctx, tt.key)
-			assert.Equal(t, ErrKeyNotExist, err)
+			assert.Equal(t, errs.ErrKeyNotFound, err)
 
-			err = cache.Put(tt.ctx, tt.key, tt.value, tt.interval)
+			err = oc.Set(tt.ctx, tt.key, tt.value, tt.interval)
 			require.NoError(t, err)
 
 			val, err := c.Get(tt.ctx, tt.key)
@@ -124,7 +129,7 @@ func TestWriteDoubleDeleteCache_Set(t *testing.T) {
 			time.Sleep(tt.sleepSecond)
 
 			_, err = c.Get(tt.ctx, tt.key)
-			assert.Equal(t, ErrKeyNotExist, err)
+			assert.Equal(t, errs.ErrKeyNotFound, err)
 		})
 	}
 }
