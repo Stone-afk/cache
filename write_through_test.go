@@ -22,8 +22,12 @@ func TestWriteThoughCache_Set(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			name:  "store key/value in db fail",
-			cache: NewMemoryCache(),
+			name: "store key/value in db fail",
+			cache: func() Cache {
+				c, err := NewLocalCache()
+				assert.Nil(t, err)
+				return c
+			}(),
 			storeFunc: func(ctx context.Context, key string, val any) error {
 				return errors.New("failed")
 			},
