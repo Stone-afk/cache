@@ -31,8 +31,13 @@ func TestWriteThoughCache_Set(t *testing.T) {
 			storeFunc: func(ctx context.Context, key string, val any) error {
 				return errors.New("failed")
 			},
-			wantErr: berror.Wrap(errors.New("failed"), PersistCacheFailed,
-				fmt.Sprintf("key: %s, val: %v", "", nil)),
+			wantErr: func() error {
+				err := errors.New("failed")
+				wrapErr := errors.New(fmt.Sprintf("%s, %s", err.Error(), fmt.Sprintf("key: hello, val: world")))
+				return errs.ErrStoreFailed(wrapErr)
+			}(),
+			key:   "hello",
+			value: "world",
 		},
 		{
 			name:  "store key/value success",
