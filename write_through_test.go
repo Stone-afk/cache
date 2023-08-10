@@ -40,8 +40,12 @@ func TestWriteThoughCache_Set(t *testing.T) {
 			value: "world",
 		},
 		{
-			name:  "store key/value success",
-			cache: NewMemoryCache(),
+			name: "store key/value success",
+			cache: func() Cache {
+				c, err := NewLocalCache()
+				assert.Nil(t, err)
+				return c
+			}(),
 			storeFunc: func(ctx context.Context, key string, val any) error {
 				mockDbStore[key] = val
 				return nil
