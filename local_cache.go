@@ -223,6 +223,13 @@ func (l *LocalCache) IsExist(ctx context.Context, key string) (bool, error) {
 	return false, nil
 }
 
+func (l *LocalCache) ClearAll(context.Context) error {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	l.data = make(map[string]*ItemValue)
+	return nil
+}
+
 // close 无缓存，调用两次 Close 呢？第二次会阻塞
 // close 1 缓存，调用三次就会阻塞
 // Close()

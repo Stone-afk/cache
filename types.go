@@ -20,6 +20,7 @@ type Cache interface {
 	Delete(ctx context.Context, key string) error
 	LoadAndDelete(ctx context.Context, key string) (any, error)
 	IsExist(ctx context.Context, key string) (bool, error)
+	ClearAll(ctx context.Context) error
 }
 
 type CacheV2[T any] interface {
