@@ -213,6 +213,21 @@ func (l *LocalCache) LoadAndDelete(ctx context.Context, key string) (any, error)
 	return itm.val, nil
 }
 
+func (l *LocalCache) Incr(ctx context.Context, key string) error {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	itm, ok := l.data[key]
+	if !ok {
+		return errs.ErrKeyNotFound
+	}
+	val, err := incr(itm.val)
+	if err != nil {
+		return err
+	}
+	itm.val = val
+	return nil
+}
+
 // IsExist checks if cache exists in memory.
 func (l *LocalCache) IsExist(ctx context.Context, key string) (bool, error) {
 	l.mutex.RLock()
