@@ -20,8 +20,8 @@ var (
 	ErrCacheRequired     = errors.New("cache: cache can not be nil")
 	ErrLoadFuncRequired  = errors.New("cache: loadFunc cannot be nil")
 
-	ErrIncrementOverflow = errors.New("cache: this incr invocation will overflow.")
-	ErrDecrementOverflow = errors.New("cache: this decr invocation will overflow.")
+	ErrIncrementOverflow = errors.New("cache: incr invocation will overflow")
+	ErrDecrementOverflow = errors.New("cache: decr invocation will overflow")
 	ErrNotIntegerType    = errors.New("cache: item val is not (u)int (u)int32 (u)int64")
 )
 
