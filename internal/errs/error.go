@@ -19,6 +19,10 @@ var (
 	ErrStoreFuncRequired = errors.New("cache: storeFunc can not be nil")
 	ErrCacheRequired     = errors.New("cache: cache can not be nil")
 	ErrLoadFuncRequired  = errors.New("cache: loadFunc cannot be nil")
+
+	ErrIncrementOverflow = errors.New("cache: this incr invocation will overflow.")
+	ErrDecrementOverflow = errors.New("cache: this decr invocation will overflow.")
+	ErrNotIntegerType    = errors.New("cache: item val is not (u)int (u)int32 (u)int64")
 )
 
 func ErrStoreFailed(err error) error {
