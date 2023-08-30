@@ -70,6 +70,10 @@ func (r *RedisCache) LoadAndDelete(ctx context.Context, key string) (any, error)
 	return r.cmd.GetDel(ctx, key).Result()
 }
 
+func (r *RedisCache) Incr(ctx context.Context, key string) error {
+	return r.cmd.Incr(ctx, key).Err()
+}
+
 func (r *RedisCache) IsExist(ctx context.Context, key string) (bool, error) {
 	res, err := r.cmd.Exists(ctx, key).Result()
 	return res > 0, err
