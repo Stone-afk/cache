@@ -228,6 +228,22 @@ func (l *LocalCache) Incr(ctx context.Context, key string) error {
 	return nil
 }
 
+func (l *LocalCache) Decr(ctx context.Context, key string) error {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	itm, ok := l.data[key]
+	if !ok {
+		return errs.ErrKeyNotFound
+	}
+
+	val, err := decr(itm.val)
+	if err != nil {
+		return err
+	}
+	itm.val = val
+	return nil
+}
+
 // IsExist checks if cache exists in memory.
 func (l *LocalCache) IsExist(ctx context.Context, key string) (bool, error) {
 	l.mutex.RLock()
