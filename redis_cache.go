@@ -10,6 +10,8 @@ import (
 
 var DefaultKey = "cacheRedis"
 
+var _ Cache = &RedisCache{}
+
 type RedisCache struct {
 	key string
 	cmd redis.Cmdable
@@ -34,22 +36,26 @@ func NewRedisCache(client redis.Cmdable, opts ...RedisCacheOption) *RedisCache {
 	return res
 }
 
-func NewRedisCacheV2(addr string) *RedisCache {
-	client := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	return NewRedisCache(client)
+//func NewRedisCacheV2(addr string) *RedisCache {
+//	client := redis.NewClient(&redis.Options{
+//		Addr:     addr,
+//		Password: "", // no password set
+//		DB:       0,  // use default DB
+//	})
+//	return NewRedisCache(client)
+//}
+
+func (rc *RedisCache) Get(ctx context.Context, key string) (any, error) {
+	return rc.cmd.Get(ctx, key).Result()
 }
 
-func (r *RedisCache) Get(ctx context.Context, key string) (any, error) {
-	return r.cmd.Get(ctx, key).Result()
+func (rc *RedisCache) GetMulti(ctx context.Context, keys []string) ([]any, error) {
+	return rc.cmd.MGet(ctx, keys...).Result()
 }
 
-func (r *RedisCache) Set(ctx context.Context, key string,
+func (rc *RedisCache) Set(ctx context.Context, key string,
 	val any, expiration time.Duration) error {
-	msg, err := r.cmd.Set(ctx, key, val, expiration).Result()
+	msg, err := rc.cmd.Set(ctx, key, val, expiration).Result()
 	if err != nil {
 		return err
 	}
@@ -60,42 +66,42 @@ func (r *RedisCache) Set(ctx context.Context, key string,
 	return nil
 }
 
-func (r *RedisCache) Delete(ctx context.Context, key string) error {
+func (rc *RedisCache) Delete(ctx context.Context, key string) error {
 	// 我们并不关心究竟有没有删除到东西
-	_, err := r.cmd.Del(ctx, key).Result()
+	_, err := rc.cmd.Del(ctx, key).Result()
 	return err
 }
 
-func (r *RedisCache) LoadAndDelete(ctx context.Context, key string) (any, error) {
-	return r.cmd.GetDel(ctx, key).Result()
+func (rc *RedisCache) LoadAndDelete(ctx context.Context, key string) (any, error) {
+	return rc.cmd.GetDel(ctx, key).Result()
 }
 
-func (r *RedisCache) Incr(ctx context.Context, key string) error {
-	return r.cmd.Incr(ctx, key).Err()
+func (rc *RedisCache) Incr(ctx context.Context, key string) error {
+	return rc.cmd.Incr(ctx, key).Err()
 }
 
-func (r *RedisCache) Decr(ctx context.Context, key string) error {
-	return r.cmd.Decr(ctx, key).Err()
+func (rc *RedisCache) Decr(ctx context.Context, key string) error {
+	return rc.cmd.Decr(ctx, key).Err()
 }
 
-func (r *RedisCache) IsExist(ctx context.Context, key string) (bool, error) {
-	res, err := r.cmd.Exists(ctx, key).Result()
+func (rc *RedisCache) IsExist(ctx context.Context, key string) (bool, error) {
+	res, err := rc.cmd.Exists(ctx, key).Result()
 	return res > 0, err
 }
 
-func (r *RedisCache) ClearAll(ctx context.Context) error {
-	keys, err := r.Scan(ctx, r.key+":*")
+func (rc *RedisCache) ClearAll(ctx context.Context) error {
+	keys, err := rc.Scan(ctx, rc.key+":*")
 	if err != nil {
 		return err
 	}
-	_, err = r.cmd.Del(ctx, keys...).Result()
+	_, err = rc.cmd.Del(ctx, keys...).Result()
 	return err
 }
 
-func (r *RedisCache) Scan(ctx context.Context, pattern string) (keys []string, err error) {
+func (rc *RedisCache) Scan(ctx context.Context, pattern string) (keys []string, err error) {
 	var cursor uint64 = 0 // start
 	for {
-		ks, csor, err := r.cmd.Scan(ctx, cursor, pattern, 1024).Result()
+		ks, csor, err := rc.cmd.Scan(ctx, cursor, pattern, 1024).Result()
 		if err != nil {
 			return
 		}
@@ -104,6 +110,6 @@ func (r *RedisCache) Scan(ctx context.Context, pattern string) (keys []string, e
 	}
 }
 
-func (r *RedisCache) associate(originKey interface{}) string {
-	return fmt.Sprintf("%s:%s", r.key, originKey)
+func (rc *RedisCache) associate(originKey interface{}) string {
+	return fmt.Sprintf("%s:%s", rc.key, originKey)
 }

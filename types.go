@@ -13,40 +13,10 @@ type Option func(cache Cache)
 // - any: Redis 之类的实现，你要考虑序列化的问题
 
 type Cache interface {
-	// Get val, err  := Get(ctx)
-	// str = val.(string)
-	Get(ctx context.Context, key string) (any, error)
-	GetMulti(ctx context.Context, keys []string) (any, error)
-	Set(ctx context.Context, key string, val any, expiration time.Duration) error
-	Delete(ctx context.Context, key string) error
-	LoadAndDelete(ctx context.Context, key string) (any, error)
-	IsExist(ctx context.Context, key string) (bool, error)
-	ClearAll(ctx context.Context) error
-	Incr(ctx context.Context, key string) error
-	Decr(ctx context.Context, key string) error
-}
-
-type CacheV2[T any] interface {
-	Get(ctx context.Context, key string) (T, error)
-
-	Set(ctx context.Context, key string, val T, expiration time.Duration) error
-
-	Delete(ctx context.Context, key string) error
-}
-
-// type CacheV3 interface {
-// 	Get[T any](ctx context.Context, key string) (T, error)
-//
-// 	Set[T any](ctx context.Context, key string, val T, expiration time.Duration) error
-//
-// 	Delete(ctx context.Context, key string) error
-// }
-
-type CacheV3 interface {
 	// Get a cached value by key.
 	Get(ctx context.Context, key string) (any, error)
 	// GetMulti is a batch version of Get.
-	GetMulti(ctx context.Context, keys []string) (any, error)
+	GetMulti(ctx context.Context, keys []string) ([]any, error)
 	// Set a cached value by key.
 	// Set(ctx context.Context, key string, val []byte, expiration time.Duration) error
 	// millis 毫秒数，过期时间
@@ -70,3 +40,19 @@ type CacheV3 interface {
 	// ClearAll Clear all cache.
 	ClearAll(ctx context.Context) error
 }
+
+type CacheV2[T any] interface {
+	Get(ctx context.Context, key string) (T, error)
+
+	Set(ctx context.Context, key string, val T, expiration time.Duration) error
+
+	Delete(ctx context.Context, key string) error
+}
+
+// type CacheV3 interface {
+// 	Get[T any](ctx context.Context, key string) (T, error)
+//
+// 	Set[T any](ctx context.Context, key string, val T, expiration time.Duration) error
+//
+// 	Delete(ctx context.Context, key string) error
+// }
