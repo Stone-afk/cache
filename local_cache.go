@@ -3,6 +3,8 @@ package cache
 import (
 	"cache/internal/errs"
 	"context"
+	"fmt"
+	"go.uber.org/multierr"
 	"sync"
 	"time"
 )
@@ -154,6 +156,20 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 		return nil, errs.ErrKeyExpired
 	}
 	return itm.val, nil
+}
+
+func (l *LocalCache) GetMulti(ctx context.Context, keys []string) (any, error) {
+	rc := make([]interface{}, len(keys))
+	var err error
+	for idx, key := range keys {
+		val, er := l.Get(context.WithValue(ctx, idx, key), key)
+		if er != nil {
+			err = multierr.Combine(er, fmt.Errorf("key [%s] error: %s", key, er.Error()))
+			continue
+		}
+		rc[idx] = val
+	}
+	return rc, err
 }
 
 // Set(ctx, "key1", value1, time.Minute)
