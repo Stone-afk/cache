@@ -16,6 +16,7 @@ type Cache interface {
 	// Get val, err  := Get(ctx)
 	// str = val.(string)
 	Get(ctx context.Context, key string) (any, error)
+	GetMulti(ctx context.Context, keys []string) (any, error)
 	Set(ctx context.Context, key string, val any, expiration time.Duration) error
 	Delete(ctx context.Context, key string) error
 	LoadAndDelete(ctx context.Context, key string) (any, error)

@@ -74,6 +74,10 @@ func (r *RedisCache) Incr(ctx context.Context, key string) error {
 	return r.cmd.Incr(ctx, key).Err()
 }
 
+func (r *RedisCache) Decr(ctx context.Context, key string) error {
+	return r.cmd.Decr(ctx, key).Err()
+}
+
 func (r *RedisCache) IsExist(ctx context.Context, key string) (bool, error) {
 	res, err := r.cmd.Exists(ctx, key).Result()
 	return res > 0, err
