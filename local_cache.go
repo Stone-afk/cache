@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var _ Cache = &LocalCache{}
+
 type ItemValue struct {
 	val      any
 	deadline time.Time
@@ -158,8 +160,8 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 	return itm.val, nil
 }
 
-func (l *LocalCache) GetMulti(ctx context.Context, keys []string) (any, error) {
-	rc := make([]interface{}, len(keys))
+func (l *LocalCache) GetMulti(ctx context.Context, keys []string) ([]any, error) {
+	rc := make([]any, len(keys))
 	var err error
 	for idx, key := range keys {
 		val, er := l.Get(context.WithValue(ctx, idx, key), key)
