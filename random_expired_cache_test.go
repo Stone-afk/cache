@@ -56,6 +56,11 @@ func TestRandomExpireCache(t *testing.T) {
 	res, _ = c.IsExist(context.Background(), "astaxie1")
 	assert.True(t, res)
 
+	vv, _ := cache.GetMulti(context.Background(), []string{"astaxie", "astaxie1"})
+	assert.Equal(t, 2, len(vv))
+	assert.Equal(t, "author", vv[0])
+	assert.Equal(t, "author1", vv[1])
+
 }
 
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
