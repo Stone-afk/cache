@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 )
@@ -61,6 +62,13 @@ func TestRandomExpireCache(t *testing.T) {
 	assert.Equal(t, "author", vv[0])
 	assert.Equal(t, "author1", vv[1])
 
+	vv, err = cache.GetMulti(context.Background(), []string{"astaxie0", "astaxie1"})
+	assert.Equal(t, 2, len(vv))
+	assert.Nil(t, vv[0])
+	assert.Equal(t, "author1", vv[1])
+
+	assert.NotNil(t, err)
+	assert.True(t, strings.Contains(err.Error(), "找不到 key"))
 }
 
 func TestWithRandomExpireOffsetFunc(t *testing.T) {
