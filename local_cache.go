@@ -174,11 +174,10 @@ func (l *LocalCache) GetMulti(ctx context.Context, keys []string) ([]any, error)
 	return rc, err
 }
 
-// Set(ctx, "key1", value1, time.Minute)
+// Set (ctx, "key1", value1, time.Minute)
 // 执行业务三十秒
 // Set (ctx, "key1", value2, time.Minute)
 // 再三十秒，第一个 time.AfterFunc 就要执行了
-
 func (l *LocalCache) Set(ctx context.Context, key string,
 	val any, expiration time.Duration) error {
 	// 这个是有破绽的
